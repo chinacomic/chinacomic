@@ -1,0 +1,25 @@
+#!/usr/bin/awk -f
+###Notes
+## $0 is the entire line of text to be parsed
+## $1, $2, $3, etc. are the fields of the line above separated by spaces (default) or whatever is indicated by the -F toggle
+## $NF is the last field (or maybe null field) at the end of the line
+
+
+BEGIN {
+    d = "[[:digit:]]"
+    OFS = FS = ","
+}
+
+{
+    delim = ""
+    for (i = 1; i <= NF; i++) {
+        if (i == 7) {
+            printf "%s%.0f", delim, $i
+        }
+        else {
+            printf "%s%s", delim, $i
+        }
+        delim = OFS
+    }
+    printf "\n"
+}

@@ -1,0 +1,104 @@
+#!/bin/bash
+CURRYEAR='18'
+read -p "Give me the month to collect data for: " REPLY
+case $REPLY in
+    January | january | Jan | 01 | 1)
+        filterno="01"
+        monthname="January"
+        ;;
+    February | february | Feb | feb | 02 | 2)
+       filterno="02"
+       monthname="February"
+       ;;
+   March | march | Mar | mar | 03 | 3)
+       filterno="03"
+       monthname="March"
+       ;;
+   April | april | Apr | apr | 04 | 4)
+       filterno="04"
+       monthname="April"
+       ;;
+   May | may | 05 | 5)
+       filterno="05"
+       monthname="May"
+       ;;
+   June | june | Jun | jun | 06 | 6)
+       filterno="06"
+       monthname="June"
+       ;;
+   July | july | Jul | jul | 07 | 7)
+       filterno="07"
+       monthname="July"
+       ;;
+   August | august | Aug | aug | 08 | 8)
+       filterno="08"
+       monthname="August"
+       ;;
+   September | september | Sept | sept | Sep | sep | 09 | 9)
+       filterno="09"
+       monthname="September"
+       ;;
+   October | october | Oct | oct | 10)
+       filterno="10"
+       monthname="October"
+       ;;
+   November | november | Nov | nov | 11)
+       filterno="11"
+       monthname="November"
+       ;;
+   December | december | Dec | dec | 12)
+       filterno="12"
+       monthname="December"
+       ;;
+   *)
+      echo "You did not give me a valid month"
+      exit 1
+      ;;
+esac
+read -p "Is this for HVAC or Parking? " REPLY2
+
+case $REPLY2 in
+    HVAC | hvac | H | h)
+        mdb-export /mnt/other/Log.mdb EvnLog > origfile.csv
+        echo "Obtaining HVAC information for $monthname ....."
+        grep -i "\"$filterno/[0-9][0-9]/$CURRYEAR" origfile.csv > file.csv
+        ;;
+    Parking | parking | P | p)
+        if [ $filterno -eq "01" ]
+        then
+            mo2="12"
+            let LAMO=$(( 10#$CURRYEAR ))-1
+        else
+            let mo2=$(( 10#$filterno ))-1
+            let LAMO=$CURRYEAR
+        fi
+        mdb-export /mnt/other/AcsData.mdb NAMES > NAMES
+        mdb-export /mnt/other/AcsData.mdb COMPANY > COMPANY
+        mdb-export /mnt/other/AcsData.mdb CARDS > CARDS
+        mdb-export /mnt/other/AcsData.mdb AclGrpCombo > AclGrpCombo
+        mdb-export /mnt/other/AcsData.mdb AclGrpName > AclGrpName
+        mdb-export /mnt/other/Log.mdb EvnLog > origfile.csv
+        echo "Obtaining the parking information for $monthname ......"
+        grep -i "\"$filterno/[0-9][0-9]/$CURRYEAR" origfile.csv > file2.csv
+        #Added to catch corner case of different year for previous month 
+        grep -i "\"0$mo2/[0-9][0-9]/$LAMO" origfile.csv >> file2.csv
+        ## Need to run awkwork on the file now
+        #echo "Now you need to run the command \"../awkwork file2.csv\""
+        ../awkwork file2.csv > file.csv
+        ;;
+    Other | other | O | o)
+        mdb-export /mnt/other/AcsData.mdb NAMES > NAMES
+        mdb-export /mnt/other/AcsData.mdb COMPANY > COMPANY
+        mdb-export /mnt/other/AcsData.mdb CARDS > CARDS
+        mdb-export /mnt/other/AcsData.mdb AclGrpCombo > AclGrpCombo
+        mdb-export /mnt/other/AcsData.mdb AclGrpName > AclGrpName
+        mdb-export /mnt/other/Log.mdb EvnLog > origfile.csv
+        echo "Obtaining the parking information for $CURRYEAR ......"
+        grep -i "\"[0-9][0-9]/[0-9][0-9]/$CURRYEAR" origfile.csv > file2.csv
+        ;;
+    *)
+        echo "You did not enter a valid selection for the type of query"
+        exit 1
+        ;;
+
+esac

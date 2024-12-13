@@ -1,0 +1,15 @@
+#!/bin/bash
+
+for i in $(\ls *Reserved)
+do
+    echo "Generating printable file for $i"
+a2ps -o ${i}.ps $i
+done
+for j in $(\ls *ps)
+do
+    echo "Generating pdf for $j"
+ps2pdf $j
+done
+echo "Copying the files to the common drive"
+cp -v *.pdf '/home/mounted/network/drive/'
+
